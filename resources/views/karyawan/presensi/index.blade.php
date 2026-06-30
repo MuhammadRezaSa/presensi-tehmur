@@ -4,16 +4,41 @@
 
 @section('styles')
 <style>
+    .presence-shell {
+        max-width: 640px;
+        margin: 0 auto;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        padding: 1.25rem;
+    }
+
+    .presence-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+        text-align: center;
+    }
+
+    .presence-subtitle {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        text-align: center;
+        margin-bottom: 1.1rem;
+    }
+
     .camera-container {
         width: 100%;
         max-width: 450px;
         margin: 0 auto;
         position: relative;
-        background-color: #000;
+        background-color: #0f172a;
         border-radius: 1rem;
         overflow: hidden;
         aspect-ratio: 3/4;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 18px rgba(2, 6, 23, 0.12);
         border: 4px solid #ffffff;
     }
 
@@ -35,23 +60,61 @@
         pointer-events: none;
     }
 
+    .status-grid {
+        margin-top: 1rem;
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .status-overlay {
+        background-color: #ffffff;
+        border-radius: 0.8rem;
+        padding: 0.8rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-ok { color: #15803d; }
+    .status-error { color: #b91c1c; }
+    .status-loading { color: #d97706; }
+
+    .capture-area {
+        text-align: center;
+        margin-top: 1.2rem;
+    }
+
     .btn-capture {
-        width: 70px;
-        height: 70px;
+        width: 72px;
+        height: 72px;
         background-color: #ffffff;
         border: 5px solid var(--accent-green);
         border-radius: 50%;
-        margin: 1.5rem auto 0;
+        margin: 0 auto;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        transition: transform 0.1s ease;
+        box-shadow: 0 6px 14px rgba(21, 128, 61, 0.18);
+        transition: transform 0.12s ease, box-shadow 0.2s ease;
     }
 
-    .btn-capture:active {
-        transform: scale(0.9);
+    .btn-capture:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(21, 128, 61, 0.24);
+    }
+
+    .btn-capture:active:not(:disabled) {
+        transform: scale(0.94);
+    }
+
+    .btn-capture:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
     .btn-capture-inner {
@@ -61,65 +124,70 @@
         border-radius: 50%;
     }
 
-    .status-overlay {
-        background-color: #ffffff;
-        border-radius: 0.75rem;
-        padding: 0.75rem 1rem;
-        margin: 1rem 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.85rem;
+    .btn-label {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
         font-weight: 600;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-        border: 1px solid #f1f5f9;
     }
 
-    .status-ok { color: #15803d; }
-    .status-error { color: #b91c1c; }
-    .status-loading { color: #d97706; }
+    .presence-done {
+        background-color: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+        border-radius: 0.8rem;
+        padding: 1rem;
+        text-align: center;
+        margin-top: 1.1rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
 </style>
 @endsection
 
 @section('content')
-<div style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem; text-align: center;">
-    Presensi: {{ !$presensi ? 'Masuk Kerja' : ($presensi->jam_pulang ? 'Sudah Selesai' : 'Pulang Kerja') }}
-</div>
-<p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-bottom: 1.25rem;">
-    Arahkan kamera ke wajah Anda & pastikan GPS Anda aktif.
-</p>
-
-<!-- Tampilan Kamera Web -->
-<div class="camera-container">
-    <video id="webcam" autoplay playsinline></video>
-    <canvas id="canvas-overlay"></canvas>
-</div>
-
-<!-- Status GPS -->
-<div class="status-overlay" id="gps-status-box">
-    <i class="fa-solid fa-spinner fa-spin status-loading" id="gps-icon"></i>
-    <span id="gps-text">Mencari lokasi GPS Anda...</span>
-</div>
-
-<!-- Status Wajah (Face-API) -->
-<div class="status-overlay" id="face-status-box">
-    <i class="fa-solid fa-spinner fa-spin status-loading" id="face-icon"></i>
-    <span id="face-text">Memuat kecerdasan pengenalan wajah...</span>
-</div>
-
-<!-- Tombol Capture -->
-@if(!$presensi || !$presensi->jam_pulang)
-    <div style="text-align: center;">
-        <button class="btn-capture" id="capture-btn" disabled>
-            <div class="btn-capture-inner"></div>
-        </button>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;" id="btn-label">Tunggu verifikasi...</p>
+<div class="presence-shell">
+    <div class="presence-title">
+        Presensi: {{ !$presensi ? 'Masuk Kerja' : ($presensi->jam_pulang ? 'Sudah Selesai' : 'Pulang Kerja') }}
     </div>
-@else
-    <div style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; border-radius: 0.75rem; padding: 1rem; text-align: center; margin-top: 1.5rem; font-weight: 700; font-size: 0.9rem;">
-        <i class="fa-solid fa-circle-check"></i> Anda telah menyelesaikan presensi hari ini.
+    <p class="presence-subtitle">
+        Arahkan kamera ke wajah Anda & pastikan GPS Anda aktif.
+    </p>
+
+    <!-- Tampilan Kamera Web -->
+    <div class="camera-container">
+        <video id="webcam" autoplay playsinline></video>
+        <canvas id="canvas-overlay"></canvas>
     </div>
-@endif
+
+    <div class="status-grid">
+        <!-- Status GPS -->
+        <div class="status-overlay" id="gps-status-box">
+            <i class="fa-solid fa-spinner fa-spin status-loading" id="gps-icon"></i>
+            <span id="gps-text">Mencari lokasi GPS Anda...</span>
+        </div>
+
+        <!-- Status Wajah (Face-API) -->
+        <div class="status-overlay" id="face-status-box">
+            <i class="fa-solid fa-spinner fa-spin status-loading" id="face-icon"></i>
+            <span id="face-text">Memuat kecerdasan pengenalan wajah...</span>
+        </div>
+    </div>
+
+    <!-- Tombol Capture -->
+    @if(!$presensi || !$presensi->jam_pulang)
+        <div class="capture-area">
+            <button class="btn-capture" id="capture-btn" disabled>
+                <div class="btn-capture-inner"></div>
+            </button>
+            <p class="btn-label" id="btn-label">Tunggu verifikasi...</p>
+        </div>
+    @else
+        <div class="presence-done">
+            <i class="fa-solid fa-circle-check"></i> Anda telah menyelesaikan presensi hari ini.
+        </div>
+    @endif
+</div>
 
 @endsection
 
@@ -283,58 +351,60 @@
     loadFaceApi();
 
     // 6. Proses Klik Tombol Presensi (Capture & Kirim Ajax)
-    captureButton.addEventListener('click', async () => {
-        if (isProcessing) return;
-        isProcessing = true;
-        captureButton.disabled = true;
-        btnLabel.textContent = "Mengirim presensi...";
+    if (captureButton) {
+        captureButton.addEventListener('click', async () => {
+            if (isProcessing) return;
+            isProcessing = true;
+            captureButton.disabled = true;
+            btnLabel.textContent = "Mengirim presensi...";
 
-        // Ambil frame gambar saat ini dari video webcam
-        const canvasTemp = document.createElement('canvas');
-        canvasTemp.width = video.videoWidth;
-        canvasTemp.height = video.videoHeight;
-        const ctxTemp = canvasTemp.getContext('2d');
-        // Gambar cermin dibalik kembali agar orientasinya normal
-        ctxTemp.translate(canvasTemp.width, 0);
-        ctxTemp.scale(-1, 1);
-        ctxTemp.drawImage(video, 0, 0, canvasTemp.width, canvasTemp.height);
-        const dataUrl = canvasTemp.toDataURL('image/jpeg');
+            // Ambil frame gambar saat ini dari video webcam
+            const canvasTemp = document.createElement('canvas');
+            canvasTemp.width = video.videoWidth;
+            canvasTemp.height = video.videoHeight;
+            const ctxTemp = canvasTemp.getContext('2d');
+            // Gambar cermin dibalik kembali agar orientasinya normal
+            ctxTemp.translate(canvasTemp.width, 0);
+            ctxTemp.scale(-1, 1);
+            ctxTemp.drawImage(video, 0, 0, canvasTemp.width, canvasTemp.height);
+            const dataUrl = canvasTemp.toDataURL('image/jpeg');
 
-        // Tentukan rute tujuan absen (masuk / pulang)
-        const isPulang = "{{ $presensi && !$presensi->jam_pulang ? 'true' : 'false' }}" === 'true';
-        const postUrl = isPulang ? "{{ route('karyawan.presensi.pulang') }}" : "{{ route('karyawan.presensi.masuk') }}";
+            // Tentukan rute tujuan absen (masuk / pulang)
+            const isPulang = "{{ $presensi && !$presensi->jam_pulang ? 'true' : 'false' }}" === 'true';
+            const postUrl = isPulang ? "{{ route('karyawan.presensi.pulang') }}" : "{{ route('karyawan.presensi.masuk') }}";
 
-        // Kirim data ke backend Laravel
-        fetch(postUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({
-                image: dataUrl,
-                lat: latitude,
-                lng: longitude
+            // Kirim data ke backend Laravel
+            fetch(postUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    image: dataUrl,
+                    lat: latitude,
+                    lng: longitude
+                })
             })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                window.location.href = "{{ route('karyawan.dashboard') }}";
-            } else {
-                alert("Absen Gagal: " + data.message);
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = "{{ route('karyawan.dashboard') }}";
+                } else {
+                    alert("Absen Gagal: " + data.message);
+                    isProcessing = false;
+                    captureButton.disabled = false;
+                    btnLabel.textContent = "Silakan coba lagi.";
+                }
+            })
+            .catch(err => {
+                alert("Error koneksi server!");
+                console.error(err);
                 isProcessing = false;
                 captureButton.disabled = false;
-                btnLabel.textContent = "Silakan coba lagi.";
-            }
-        })
-        .catch(err => {
-            alert("Error koneksi server!");
-            console.error(err);
-            isProcessing = false;
-            captureButton.disabled = false;
+            });
         });
-    });
+    }
 </script>
 @endsection
