@@ -12,15 +12,15 @@
     
     <style>
         :root {
-            --primary: #0f172a;
-            --primary-light: #1e293b;
-            --accent-green: #10b981;
-            --accent-green-hover: #059669;
-            --bg-body: #020617;
-            --text-dark: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --card-bg: #0f172a;
+            --primary: #002855;
+            --primary-light: #003b7a;
+            --accent-green: #15803d;
+            --accent-green-hover: #166534;
+            --bg-body: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
         }
 
         * {
@@ -39,13 +39,13 @@
             flex-direction: column;
         }
 
-        /* Header Premium Kiosk */
+        /* Header Karyawan (Bright - selaras Owner) */
         header {
             background-color: var(--primary);
             color: #ffffff;
             padding: 1rem 2rem;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 40, 85, 0.15);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -70,20 +70,20 @@
             width: 48px;
             height: 48px;
             border-radius: 0.75rem;
-            background-color: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--accent-green);
+            background-color: rgba(74, 222, 128, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.35);
+            color: #4ade80;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            animation: pulse 2s infinite;
+            animation: pulse 2.2s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.35); }
+            70% { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
         }
 
         .header-text h3 {
@@ -95,22 +95,22 @@
 
         .header-text p {
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: #cbd5e1;
             margin-top: 0.15rem;
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
         /* Digital Clock */
         .digital-clock-box {
-            background-color: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.6rem;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -120,23 +120,23 @@
             font-family: monospace;
             font-size: 1.15rem;
             font-weight: 700;
-            color: var(--accent-green);
+            color: #86efac;
         }
 
         .digital-date {
-            font-size: 0.7rem;
-            color: var(--text-muted);
+            font-size: 0.72rem;
+            color: #cbd5e1;
             margin-top: 0.1rem;
         }
 
         /* Logout Button */
         .btn-logout {
-            color: #ef4444;
-            background-color: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #b91c1c;
+            background-color: #ffffff;
+            border: 1px solid #fee2e2;
             width: 40px;
             height: 40px;
-            border-radius: 0.5rem;
+            border-radius: 0.55rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -146,9 +146,9 @@
         }
 
         .btn-logout:hover {
-            background-color: #ef4444;
-            color: #ffffff;
-            transform: translateY(-2px);
+            background-color: #fee2e2;
+            color: #991b1b;
+            transform: translateY(-1px);
         }
 
         .container {
@@ -164,14 +164,35 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: var(--bg-body);
+            background: #f1f5f9;
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
+            background: #cbd5e1;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+            background: #94a3b8;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 0.85rem 1rem;
+            }
+
+            .header-container {
+                gap: 0.75rem;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .container {
+                padding: 1.25rem 0.95rem;
+            }
         }
     </style>
     @yield('styles')
